@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gemma Chat Interface</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+        .chat-window {
+            width: 80%;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: scroll;
+            height: 300px;
+        }
+        .chat-window p {
+            margin: 5px 0;
+        }
+        .input-area {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3e8e41;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gemma Chat Interface</h1>
+
+    <div class="chat-window" id="chatWindow">
+        <!-- Chat messages will be displayed here -->
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="promptInput" placeholder="Enter your prompt...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chatWindow');
+        const promptInput = document.getElementById('promptInput');
+
+        function sendMessage() {
+            const prompt = promptInput.value.trim();
+            if (prompt !== "") {
+                addMessage('You: ' + prompt);
+                //  Here you would make the AJAX request to your Flask server
+                //  to send the 'prompt' to the server and get the response.
+                // Example (replace with your actual code):
+                fetch('/api/chat', {  // Replace '/api/chat' with your Flask route
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    addMessage('Gemma: ' + data.response);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    addMessage('Error:  Failed to get response from Gemma.');
+                }
+                );
+
+                promptInput.value = ""; // Clear the input field
+            }
+        }
+
+        function addMessage(message) {
+            const messageDiv = document.createElement('p');
+            messageDiv.textContent = message;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll to the bottom
+        }
+    </script>
+</body>
+</html>
