@@ -1,22 +1,41 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, render_template, jsonify
+import requests
 
 app = Flask(__name__)
+
+OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 
 
 @app.route("/")
 def home():
-
     return render_template("index.html")
 
-@app.route('/api/chat', methods=['POST'])
+
+@app.route("/api/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-    prompt = data['prompt']
+    data = request.get_json()    
+    prompt = data.get("prompt")
 
-    # Replace this with your actual Gemma interaction code
-    response = f"You said: {prompt}.  This is a placeholder response."
+    try:
 
-    return jsonify({'response': response})
+        response = requests.post(
+            OLLAMA_ENDPOINT,
+            json={
+                "model": "gemma3:4b",
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        response_data = response.json()
+        answer = response_data.get("response", "")
+     
 
-if __name__ == '__main__':
-    app.run(debug=True) # Use debug=True for development only
+    except Exception as e:
+        answer = f"Error communicating with Ollama: {e}"
+        print(e)
+
+    return jsonify({"response": answer})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
